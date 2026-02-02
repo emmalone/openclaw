@@ -4,6 +4,69 @@ Last Updated: 2026-02-02
 
 ---
 
+## Session: 2026-02-02 (2) - LAWS Automation via Hook
+
+### What We Did
+Fixed the LAWS system failure where Claude wasn't reading BACKSTORY.md at session start despite explicit instructions. Implemented automatic context injection via Claude Code's SessionStart hook system.
+
+### The Problem
+LAWS v1 and v2 relied on behavioral compliance - instructions in CLAUDE.md told Claude to read BACKSTORY.md before responding. This failed repeatedly because:
+- Instructions are suggestions, not enforcement
+- No mechanism to guarantee execution before first output
+- User had to start multiple sessions to verify compliance
+
+### The Solution: SessionStart Hook
+Implemented automatic BACKSTORY.md injection using Claude Code's hook system:
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Hook script | `~/.claude/hooks/load-backstory.sh` | Reads BACKSTORY.md from $PWD, outputs to stdout |
+| Hook config | `~/.claude/settings.json` (hooks section) | Triggers on startup/resume/compact |
+
+**How it works:**
+1. Session starts → Hook fires automatically (no Claude behavior needed)
+2. Hook reads `$PWD/BACKSTORY.md` if it exists
+3. Hook outputs content to stdout → injected into Claude's context
+4. Claude sees `=== BACKSTORY.md (auto-loaded by LAWS hook) ===` in context
+5. Claude outputs acknowledgment as first response
+
+### Files Created/Modified
+- `~/.claude/hooks/load-backstory.sh` - New hook script (chmod +x)
+- `~/.claude/settings.json` - Added hooks.SessionStart configuration
+- `~/.claude/CLAUDE.md` - Simplified LAWS section (now just acknowledgment instruction)
+- `BACKSTORY.md` - Updated Problems Solved section with v3 solution
+
+### Key Technical Details
+Hook configuration in settings.json:
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/mark/.claude/hooks/load-backstory.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Next Steps
+- [ ] Start new session to verify hook works
+- [ ] Continue with Anthropic auth setup after hook verified
+
+### Cross-References
+- Claude Code hooks documentation (researched via claude-code-guide agent)
+- Global CLAUDE.md version history updated with LAWS v3
+
+---
+
 ## Session: 2026-02-02 - Telegram Setup & LAWS System
 
 ### What We Did
@@ -53,8 +116,13 @@ Established LAWS system for Claude Code accountability, deep-dived into OpenClaw
 
 1. **BACKSTORY.md not read at session start**
    - Problem: Instruction existed in CLAUDE.md but wasn't followed
-   - Solution: Created LAWS system with mandatory visible acknowledgment
-   - Lesson: Instructions aren't enforced, need accountability mechanism
+   - Solution v1: Created LAWS system with mandatory visible acknowledgment
+   - Solution v2: Made instructions more explicit with stop signs
+   - **Solution v3 (FINAL):** SessionStart hook auto-injects BACKSTORY.md content
+     - Hook: `~/.claude/hooks/load-backstory.sh`
+     - Config: `~/.claude/settings.json` (hooks.SessionStart)
+     - Fires on: startup, resume, compact
+     - Now Claude sees BACKSTORY.md content automatically - no behavioral compliance needed
 
 2. **Node version mismatch (needed 22+, had 20)**
    - Problem: OpenClaw requires Node 22.12.0+, system had 20.17.0
