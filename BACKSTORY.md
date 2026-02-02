@@ -4,6 +4,191 @@ Last Updated: 2026-02-02
 
 ---
 
+## Session: 2026-02-02 (3) - OpenClaw Fresh Install & Configuration
+
+### What We Did
+Completely removed old clawdbot installation, installed fresh OpenClaw, configured Telegram, set up Ollama for local models, and established working Opus-based system.
+
+### Starting Point
+- Failed attempts with clawdbot and earlier openclaw installs
+- Goal: Get Anthropic OAuth working (decided to use API key instead)
+- Wanted cost-optimized model routing: Ollama → Haiku → Opus
+
+### Installation & Cleanup
+1. **Removed clawdbot completely:**
+   - Uninstalled global npm package (674 packages removed)
+   - Removed `~/.clawdbot` directory
+   - Stopped old `com.clawdbot.gateway` LaunchAgent service
+
+2. **Fresh OpenClaw install:**
+   - Created project structure: `~/PycharmProjects/openclaw/`
+   - Cloned from correct repo: `https://github.com/openclaw/openclaw`
+   - Set up fork at: `https://github.com/emmalone/openclaw`
+   - Configured remotes: `origin` (fork) + `upstream` (openclaw/openclaw)
+   - Installed globally: `npm install -g openclaw@latest` (v2026.2.1)
+
+3. **Ran onboarding wizard:**
+   ```bash
+   openclaw onboard --install-daemon
+   ```
+   - Configured local gateway mode (port 18789, loopback only)
+   - Set up Anthropic with API key (not OAuth - safer, no ban risk)
+   - Installed LaunchAgent daemon for auto-start
+
+### Telegram Configuration
+**Bot Setup:**
+- Bot token: `8570137462:AAHKh52O7ecNVgAM-oWLqZ7IAYkXF_Swt-E`
+- Bot username: `@anthony_cos_bot`
+- User allowlist: `8242010151` (Mark's Telegram ID)
+
+**Issues Encountered & Fixed:**
+1. **"Access not configured" error** → Added user ID to allowlist
+   ```bash
+   openclaw config set channels.telegram.allowFrom '["8242010151"]'
+   ```
+
+2. **JSON responses instead of text** → Disabled streaming mode
+   ```bash
+   openclaw config set channels.telegram.streamMode "off"
+   ```
+   - Was getting raw JSON tool calls: `{"name": "message", "arguments": {...}}`
+   - Streaming mode was causing response formatting issues
+
+3. **Gateway conflicts** → Removed old clawdbot service
+   - Old `com.clawdbot.gateway` was still running
+   - Caused intermittent failures and shutdowns
+
+### Ollama Installation & Configuration
+**Installed Ollama for local models:**
+```bash
+brew install ollama
+brew services start ollama
+ollama pull qwen2.5-coder:7b  # 4.7GB, good for coding tasks
+```
+
+**Configured in OpenClaw:**
+- Added to `~/.openclaw/openclaw.json` under `models.providers.ollama`
+- Model: `qwen2.5-coder:7b` (32k context, free local inference)
+- Base URL: `http://127.0.0.1:11434/v1`
+- Verified Ollama API working with direct curl test
+
+**Issue: Tool Call JSON Responses**
+- When using Ollama as primary, got JSON tool calls instead of text
+- Same issue as with Telegram streaming
+- **Decision: Pause Ollama integration until debugging complete**
+
+### Current Working Configuration
+
+**Model Setup:**
+- **Primary:** `anthropic/claude-opus-4-5` (stable, reliable)
+- **Fallback:** None currently
+- **Ready but paused:** `ollama/qwen2.5-coder:7b` (needs tool call debugging)
+
+**Channel Setup:**
+- **Telegram:** Working, polling mode, streaming OFF
+- **Gateway:** `http://127.0.0.1:18789/` (local only, loopback)
+- **Auth:** Token-based gateway auth
+
+**File Locations:**
+- Config: `~/.openclaw/openclaw.json`
+- Credentials: `~/.openclaw/credentials/`
+- Logs: `/tmp/openclaw/openclaw-YYYY-MM-DD.log`
+- Workspace: `~/.openclaw/workspace/`
+- Project: `~/PycharmProjects/openclaw/openclaw/`
+
+### Key Decisions
+
+**OAuth vs API Key:**
+- **Chose API key** for Anthropic (not OAuth)
+- Rationale: Simpler, no ban risk, same rate limits
+- User concerned about getting banned - API key is perfectly safe
+
+**Model Strategy:**
+- **Immediate:** Use Opus for stability (everything working)
+- **Future:** Implement intelligent model selection workflow:
+  1. Local model evaluates request complexity
+  2. Suggests best model (Ollama/Haiku/Opus)
+  3. User confirms choice
+  4. Request routed to selected model
+
+**Cost Optimization Goal:**
+```
+Tier 1: Ollama/Qwen (local, free) → Simple coding tasks
+Tier 2: Haiku (cloud, cheap) → Moderate complexity
+Tier 3: Opus (cloud, expensive) → Complex reasoning only
+```
+*Currently using Tier 3 for everything until Tier 1 debugged*
+
+### Problems Solved
+1. ✅ Clean removal of clawdbot (no leftover conflicts)
+2. ✅ Fresh OpenClaw install with proper daemon setup
+3. ✅ Telegram access control (allowlist working)
+4. ✅ JSON response issue (streaming disabled)
+5. ✅ Gateway stability (no more shutdowns)
+6. ✅ Anthropic connection (Opus working perfectly)
+7. ✅ Model selection via Telegram (`/model` commands)
+
+### Problems Remaining
+1. ⚠️ Ollama returns JSON tool calls instead of text responses
+   - Need to debug why model is invoking tools vs answering directly
+   - May need to adjust model configuration or response parsing
+2. ⚠️ Haiku model name unclear (multiple variants, not in catalog)
+3. ⚠️ Intelligent model selection workflow not implemented yet
+
+### Next Steps
+**Priority 1: Verify Opus Stability**
+- Test Telegram responses are clean text (not JSON)
+- Ensure gateway stays running (no afternoon shutdowns)
+- Confirm web dashboard chat works
+
+**Priority 2: Debug Ollama Integration** (when ready)
+- Investigate why Ollama returns tool call JSON
+- Check if tools need to be disabled for Ollama
+- Test response formatting and parsing
+- Once working, set as primary with Opus fallback
+
+**Priority 3: Implement Smart Model Selection** (future)
+- Create custom skill or hook for complexity evaluation
+- Present model options to user before execution
+- Allow per-request model override
+- Track cost savings from routing
+
+### Useful Commands
+```bash
+# Status checks
+openclaw gateway status
+openclaw channels status
+openclaw models list
+
+# Logs and debugging
+openclaw logs --tail 50
+tail -f /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
+
+# Configuration
+openclaw config get agents.defaults.model
+openclaw config set <key> <value>
+
+# Gateway control
+openclaw gateway restart
+openclaw gateway stop
+
+# Model selection (in Telegram)
+/model              # Show current model
+/model list         # List available models
+/model opus         # Switch to Opus
+/model qwen         # Switch to Qwen (when working)
+/new                # Reset session with default model
+```
+
+### Cross-References
+- Global Claude Code config: `~/.claude/` (git repo: ClaudeCodeConfig)
+- OpenClaw docs: https://docs.openclaw.ai/
+- Ollama provider docs: https://docs.openclaw.ai/providers/ollama
+- Model selection: https://docs.openclaw.ai/concepts/models
+- Telegram setup: https://docs.openclaw.ai/channels/telegram
+
+---
+
 ## Session: 2026-02-02 (2) - LAWS Automation via Hook
 
 ### What We Did
