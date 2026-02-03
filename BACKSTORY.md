@@ -4,6 +4,106 @@ Last Updated: 2026-02-02
 
 ---
 
+## Session: 2026-02-02 (5) - Ollama Model Compatibility Testing
+
+### What We Did
+Comprehensive testing of multiple Ollama models to understand why local models fail with OpenClaw. Downloaded larger models, tested each, and identified the fundamental incompatibility between OpenClaw's agent architecture and local Ollama models.
+
+### Models Tested
+
+| Model | Size | Result |
+|-------|------|--------|
+| `qwen2.5-coder:7b` | 4.7 GB | Responds with `NO_REPLY` (misinterprets system prompt) |
+| `qwen2.5-coder:14b` | 9.0 GB | Outputs JSON tool calls: `{"name": "sessions_send", ...}` |
+| `deepseek-coder-v2:16b` | 8.9 GB | Error: "does not support tools" |
+
+### Root Cause Analysis
+
+**Session log evidence (from `~/.openclaw/agents/main/sessions/*.jsonl`):**
+```json
+// Qwen's actual responses:
+{"role":"assistant","content":[{"type":"text","text":"NO_REPLY"}]}
+{"role":"assistant","content":[{"type":"text","text":"NO_REPLY"}]}
+```
+
+**Why each model fails:**
+
+1. **Qwen models (7B, 14B):** Accept tool definitions but misinterpret OpenClaw's complex 4096-token system prompt. The `NO_REPLY` instruction (meant for "when nothing needs attention") is over-applied to all user messages.
+
+2. **DeepSeek:** Doesn't support function/tool calling via OpenAI-compatible API at all. Returns HTTP 400 error.
+
+3. **OpenClaw's architecture assumes tool support:** The system prompt instructs models to use tools like `message`, `sessions_send`, etc. Local models either can't use them or try to output JSON tool calls as text.
+
+### Key Discovery: No Config Option to Disable Tools
+
+Searched OpenClaw source code and found:
+- `disableTools` exists as internal runtime parameter (not configurable)
+- `tools.byProvider.deny: ["*"]` filters tools but doesn't stop them from being sent to model
+- No per-provider option to completely disable tool definitions in API requests
+- Would need code changes in OpenClaw to support tool-free mode for local models
+
+### Configuration Changes Made
+
+**Removed tool restrictions (didn't help):**
+```bash
+# Tried these configurations - none fixed the issue
+tools.byProvider.ollama.deny: ["*"]        # Too restrictive
+tools.byProvider.ollama.profile: "minimal" # Still sends tools
+tools.byProvider.ollama: {}                # Full tools, model confused
+```
+
+**Final working configuration:**
+```json
+{
+  "agents.defaults.model": {
+    "primary": "anthropic/claude-opus-4-5",
+    "fallbacks": ["ollama/qwen2.5-coder:7b"]
+  },
+  "models.providers.ollama.models": [
+    {"id": "qwen2.5-coder:14b", ...},
+    {"id": "deepseek-coder-v2:16b", ...},
+    {"id": "qwen2.5-coder:7b", ...}
+  ]
+}
+```
+
+### Cleanup Performed
+- Removed leftover `~/Library/LaunchAgents/com.clawdbot.gateway.plist`
+- Clarified: Homebrew Ollama = background service, Official app = menu bar
+
+### Decisions Made
+
+1. **Use Opus as primary** - Only reliable option for OpenClaw integration
+2. **Keep Ollama models** - Available for direct CLI use (`ollama run ...`)
+3. **Documented limitation** - OpenClaw needs tool-disable config for local models
+4. **Future path** - Could file feature request to OpenClaw for per-provider tool disable
+
+### Available Ollama Models (Direct CLI Use)
+```bash
+ollama run qwen2.5-coder:14b "write a python script"
+ollama run deepseek-coder-v2:16b "explain this code"
+ollama run qwen2.5-coder:7b "quick question"
+```
+
+### Problems Identified (Not Yet Solved)
+1. ⚠️ **No tool-disable config** - OpenClaw doesn't support disabling tools per provider
+2. ⚠️ **System prompt too complex** - 4096 tokens designed for frontier models
+3. ⚠️ **Local models incompatible** - Either reject tools or misuse them
+
+### Recommendations for Future
+1. **Feature request to OpenClaw:** Add `models.providers.<name>.disableTools: true`
+2. **Alternative approach:** Create custom agent with simplified system prompt
+3. **Model selection:** Try Llama 3.1, Mistral, or other models with better instruction following
+4. **Direct use:** For coding tasks, use Ollama directly in terminal
+
+### Cross-References
+- OpenClaw source: `/Users/mark/PycharmProjects/openclaw/src/agents/pi-embedded-runner/`
+- Tool policy: `/Users/mark/PycharmProjects/openclaw/src/agents/pi-tools.policy.ts`
+- Session logs: `~/.openclaw/agents/main/sessions/*.jsonl`
+- Ollama models: `~/.ollama/models/`
+
+---
+
 ## Session: 2026-02-02 (4) - Ollama Integration Debugging
 
 ### What We Did
