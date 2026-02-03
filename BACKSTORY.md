@@ -4,6 +4,111 @@ Last Updated: 2026-02-02
 
 ---
 
+## Session: 2026-02-02 (4) - Ollama Integration Debugging
+
+### What We Did
+Continued troubleshooting the Ollama integration with OpenClaw. Confirmed Ollama works perfectly via direct CLI and API, but fails when routed through OpenClaw gateway.
+
+### Key Findings
+
+**Authentication Clarification:**
+- This interactive Claude Code session uses **OAuth Max plan** (Anthropic's hosted service)
+- OpenClaw gateway uses **API key** (stored in `~/.openclaw/agents/main/agent/auth-profiles.json`)
+- These are separate: Claude Code ≠ OpenClaw gateway
+
+**Ollama Direct Testing (WORKS):**
+```bash
+# CLI works
+ollama run qwen2.5-coder:7b "What is 2+2?"
+# Returns: "2 + 2 equals 4"
+
+# OpenAI-compatible API works
+curl http://localhost:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "qwen2.5-coder:7b", "messages": [{"role": "user", "content": "Hello"}]}'
+# Returns proper JSON with assistant response
+```
+
+**OpenClaw Gateway (FAILS):**
+- Web UI shows: "NO_REPLY"
+- Telegram: No response at all
+- Logs show embedded run completing (~19 seconds) but empty content
+- Tools were disabled via `tools.byProvider.ollama.deny: ["*"]`
+
+### Configuration Applied
+```json
+{
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "apiKey": "ollama-local",
+        "api": "openai-completions",
+        "models": [{
+          "id": "qwen2.5-coder:7b",
+          "name": "Qwen 2.5 Coder 7B",
+          "reasoning": false,
+          "input": ["text"],
+          "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+          "contextWindow": 32768,
+          "maxTokens": 8192
+        }]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/qwen2.5-coder:7b",
+        "fallbacks": ["anthropic/claude-opus-4-5"]
+      }
+    }
+  },
+  "tools": {
+    "byProvider": {
+      "ollama": {"deny": ["*"], "profile": "minimal"}
+    }
+  }
+}
+```
+
+### Problems Identified
+
+**Root Cause Hypothesis:**
+The `profile: "minimal"` and `deny: ["*"]` may be too restrictive. OpenClaw may require at least some internal tools (like `session_status` or `message`) to format responses properly. When ALL tools are denied, the model may be unable to return a properly formatted response to the gateway.
+
+**Symptoms:**
+- Runs complete (durationMs ~19000)
+- No abort, no errors in logs
+- But content field is empty/NO_REPLY
+
+### Decisions Made
+- **Pause Ollama as primary** - Reverted to Opus until debugging complete
+- **Keep configuration** - Ollama provider setup preserved for future testing
+- **Focus on stability** - Opus working reliably for both web and Telegram
+
+### Problems Remaining
+1. ⚠️ Ollama returns NO_REPLY through OpenClaw even with tools disabled
+   - May need to allow certain internal tools
+   - Need to examine OpenClaw source for required tool handling
+   - Response parsing may expect tool-formatted output
+2. ⚠️ Haiku model names still unclear (not added yet)
+3. ⚠️ Smart model selection workflow not implemented
+
+### Next Steps (When Ready to Debug Further)
+1. Check OpenClaw source for how tool-less responses are handled
+2. Try allowing just `message` tool for Ollama
+3. Try removing `profile: "minimal"` but keeping `deny` list
+4. Check if there's a "raw mode" or "no-tools mode" for providers
+5. Compare working Anthropic request/response with Ollama ones in verbose logs
+
+### Cross-References
+- OpenClaw source: `~/PycharmProjects/openclaw/openclaw/` (cloned upstream)
+- Ollama service: `brew services info ollama`
+- Gateway logs: `tail -f /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log`
+
+---
+
 ## Session: 2026-02-02 (3) - OpenClaw Fresh Install & Configuration
 
 ### What We Did
