@@ -4,6 +4,85 @@ Last Updated: 2026-02-02
 
 ---
 
+## Session: 2026-02-02 (6) - Anthropic Model Configuration Fixed
+
+### What We Did
+Fixed model configuration issues that were causing 404 errors and cooldowns when trying to use Anthropic models other than Opus. Now have three working Anthropic models with cost tiers.
+
+### Problems Solved
+
+1. **404 Error for Sonnet Model**
+   - Problem: `anthropic/claude-3-7-sonnet-latest` returned 404 not found
+   - Solution: Changed to `anthropic/claude-sonnet-4-5` (correct model ID)
+
+2. **Provider Cooldown Blocking Requests**
+   - Problem: After failed requests, OpenClaw put the Anthropic provider in cooldown
+   - Location: `~/.openclaw/agents/main/agent/auth-profiles.json`
+   - Solution: Removed `cooldownUntil`, `failureCounts`, `lastFailureAt` from usageStats
+   - Pattern for future: Edit auth-profiles.json to clear cooldown when stuck
+
+### Current Working Configuration
+
+**Model Setup:**
+```json
+{
+  "agents.defaults.model": {
+    "primary": "anthropic/claude-sonnet-4-5",
+    "fallbacks": ["anthropic/claude-opus-4-5"]
+  }
+}
+```
+
+**Available Models (all working):**
+| Model | Alias | Use Case | Cost |
+|-------|-------|----------|------|
+| `anthropic/claude-haiku-4-5` | haiku | Quick tasks, simple questions | Cheapest |
+| `anthropic/claude-sonnet-4-5` | sonnet | General coding, moderate complexity | Mid-tier |
+| `anthropic/claude-opus-4-5` | opus | Complex reasoning, difficult problems | Most expensive |
+
+### Key Files Modified
+- `~/.openclaw/openclaw.json` - Changed primary model to sonnet
+- `~/.openclaw/agents/main/agent/auth-profiles.json` - Cleared cooldown
+
+### Commands Used
+```bash
+# Fix model
+openclaw config set agents.defaults.model.primary "anthropic/claude-sonnet-4-5"
+openclaw gateway restart
+
+# Clear cooldown (manual edit of auth-profiles.json)
+# Remove: cooldownUntil, failureCounts, lastFailureAt
+# Set: errorCount to 0
+```
+
+### Key Learnings
+
+1. **Model ID Format:** Use `claude-sonnet-4-5` not `claude-3-7-sonnet-latest`
+2. **Cooldown Recovery:** Edit `auth-profiles.json` to clear cooldowns
+3. **Fallback Behavior:** When primary fails, OpenClaw auto-tries fallback models (this is why Anthropic API was called during Ollama testing)
+
+### Telegram Model Switching
+Working commands:
+- `/model` - Show current model
+- `/model list` - List available models
+- `/model haiku` - Switch to Haiku (cheapest)
+- `/model sonnet` - Switch to Sonnet (mid-tier)
+- `/model opus` - Switch to Opus (most capable)
+
+### Status Summary
+- ✅ Sonnet 4.5 working as primary
+- ✅ Opus 4.5 working as fallback
+- ✅ Haiku 4.5 available for cheap tasks
+- ✅ Model switching via Telegram working
+- ❌ Ollama still incompatible (documented in session 5)
+
+### Cross-References
+- Auth profiles: `~/.openclaw/agents/main/agent/auth-profiles.json`
+- Main config: `~/.openclaw/openclaw.json`
+- Previous session (Ollama): Session 5 above
+
+---
+
 ## Session: 2026-02-02 (5) - Ollama Model Compatibility Testing
 
 ### What We Did
