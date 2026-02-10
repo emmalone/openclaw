@@ -4,6 +4,88 @@ Last Updated: 2026-02-09
 
 ---
 
+## Session: 2026-02-09 (8) - Obsidian Second Brain Integration
+
+### What We Did
+Designed and implemented Phase 1 of the Obsidian second brain integration — making the LifeOS vault (`/Users/mark/LIfeOS/`) the central knowledge repository shared between Claude Code and OpenClaw. Explored the full vault structure (116 files, 4 templates, 7 existing MOCs, Zettelkasten methodology), wrote a comprehensive integration plan, then executed all Phase 1 tasks.
+
+### Key Decisions
+
+- **Obsidian vault is the bridge between systems** — Not the OpenClaw workspace, not the Claude Code project dir. The LifeOS vault is the single source of truth for all knowledge output.
+- **New `6. Agent Output/` folder as staging area** — Raw AI-generated content goes here before being reviewed and promoted to `0. Permanent/` or `2. Reference/`. Prevents low-quality agent output from polluting permanent knowledge.
+- **OpenClaw workspace files stay in place** — AGENTS.md, SOUL.md, etc. are tightly coupled to OpenClaw's runtime. Cannot move to Obsidian. But research output redirects to the vault.
+- **Task handoff via `7. Pending/`** — Both systems use `for-claude-code/` and `for-openclaw/` subfolders to exchange tasks. Files use frontmatter with task format.
+- **Enhanced existing MOC Agent Operations** — Rather than creating a duplicate "Agent System MOC", enhanced the existing MOC with expanded dataview queries, systems table, and architecture doc links.
+- **Source tags for attribution** — `#source/claude-code` and `#source/openclaw` tags track which system generated content.
+- **Expanded tag taxonomy** — Added focus-area tags (`#aws`, `#klm`, `#real-estate`, `#trading`, `#ventures`, `#finance`) plus content-type tags (`#source/*`, `#status/*`).
+
+### Vault Exploration Findings
+
+| Metric | Value |
+|--------|-------|
+| Total files | 116 |
+| Templates | 4 (Note, MOC, Mental Status Check, Publishing Project) |
+| Existing MOCs | 7 (Main, Trading, KLM, Technology, Life, Claude, Agent Operations) + 2 in Fleeting (Twitter, Openclaw) |
+| Frontmatter format | YAML: title, date, links (backlinks), tags |
+| Plugins | Dataview, table-of-contents |
+| Folder system | Zettelkasten: !OS, 0. Permanent, 1. Fleeting, 2. Reference, 3. Maps, 4. Templates, 5. Attachments, 7. Pending |
+
+### Files Created
+
+**In Obsidian Vault (`/Users/mark/LIfeOS/`):**
+- `!OS/Second Brain Integration Plan.md` — Comprehensive plan covering architecture, file standards, tag taxonomy, MOC structure, agent config, research workflow, implementation phases
+- `0. Permanent/MOC AWS & Career.md` — New MOC for AWS role, FIS Global, career
+- `0. Permanent/MOC Real Estate.md` — New MOC for properties and acquisitions
+- `0. Permanent/MOC Personal Finance.md` — New MOC for budgets, taxes, cash flow
+- `0. Permanent/MOC Ventures.md` — New MOC for side hustles, publishing, new income
+- `6. Agent Output/README.md` — Explains staging area concept and file standards
+- `6. Agent Output/research/`, `summaries/`, `analysis/`, `drafts/` — Subfolders
+- `7. Pending/README.md` — Explains task handoff format and workflow
+- `7. Pending/for-claude-code/`, `for-openclaw/`, `completed/` — Handoff subfolders
+
+### Files Modified
+- `0. Permanent/MOC Agent Operations.md` — Enhanced from blank template to full MOC with systems table, expanded dataview query, architecture doc links
+- `0. Permanent/!Main MOC.md` — Added organized "Maps of Content" section with all MOCs grouped by category (Life Domains, Knowledge & Systems, Content & Interests)
+- `~/.openclaw/workspace/AGENTS.md` — Added "Obsidian Vault Output" section with write locations, required frontmatter format, tag taxonomy, MOC backlink instructions
+
+### Research Workflow Defined
+
+```
+TRIGGER → RESEARCH → CAPTURE → CLASSIFY → REVIEW → CONNECT
+```
+
+1. Request via Claude Code (SSH) or OpenClaw (Telegram)
+2. Agent performs research with available tools
+3. Output written to `6. Agent Output/` with proper frontmatter
+4. Tagged with source, focus area, and status tags
+5. You review weekly, promote best to `0. Permanent/`
+6. Cross-links added between new and existing notes
+
+### Ralph Loop Discussion
+- Explained Ralph Loop technique (iterative prompt feeding, self-referential via file state)
+- Determined Phase 1 tasks are NOT good Ralph Loop candidates (one-shot, mechanical)
+- Ralph Loop better suited for future repetitive tasks (batch file classification, multi-topic research)
+
+### Cross-References
+- Integration plan: `/Users/mark/LIfeOS/!OS/Second Brain Integration Plan.md`
+- LifeOS vision: `/Users/mark/LIfeOS/!OS/LifeOS Plan.md`
+- Strategy guide: `/Users/mark/PycharmProjects/openclaw/CLAUDE-CODE-OPENCLAW-STRATEGY.md`
+- Shared architecture: `/Users/mark/PycharmProjects/openclaw/SHARED-ARCHITECTURE.md`
+- OpenClaw AGENTS.md: `~/.openclaw/workspace/AGENTS.md`
+- Ralph Loop plugin: `~/.claude/skills/ralph-loop/`
+
+### Next Steps
+- [ ] Phase 2: Test first research cycle — have Claude Code write output to vault
+- [ ] Phase 2: Test OpenClaw URL summary writing to vault (via Telegram)
+- [ ] Phase 2: Verify frontmatter, tags, and MOC backlinks in agent output
+- [ ] Phase 3: Test `7. Pending/` task handoff between systems
+- [ ] Phase 4: Build first advisor agent personality (Anthony as COS)
+- [ ] Fill in USER.md, TOOLS.md, IDENTITY.md in OpenClaw workspace
+- [ ] Add heartbeat tasks to HEARTBEAT.md
+- [ ] Explore Antfarm installation
+
+---
+
 ## Session: 2026-02-09 (7b) - Strategy & Shared Architecture
 
 ### What We Did
@@ -64,7 +146,7 @@ Reviewed all OpenClaw workspace files. Current state:
 - [ ] Fill in USER.md, TOOLS.md, IDENTITY.md in OpenClaw workspace
 - [ ] Add heartbeat tasks to HEARTBEAT.md
 - [ ] Explore Antfarm installation and test a workflow
-- [ ] Set up shared `tasks/` directory for CC ↔ OpenClaw handoff
+- [x] Set up shared `tasks/` directory for CC ↔ OpenClaw handoff (Done in session 8 — `7. Pending/` in Obsidian vault)
 - [ ] Switch OpenClaw primary model to Haiku when ready to optimize costs
 - [ ] Test Claude Agent SDK for programmatic automation
 - [ ] Windows firewall rules for Ollama (security pending)
