@@ -4,6 +4,65 @@ Last Updated: 2026-02-10
 
 ---
 
+## Session: 2026-02-10 (10) - Browser Relay Extension & Config Fix
+
+### What We Did
+Installed the OpenClaw browser relay Chrome extension and fixed the recurring `MissingEnvVarError` for `OPENCLAW_GATEWAY_TOKEN` by replacing the env var reference with a literal token in the config file.
+
+### Key Decisions
+
+- **Gateway token switched to literal in config** — Was `${OPENCLAW_GATEWAY_TOKEN}` which broke any shell that hadn't sourced `~/.zshrc`. Now a literal value in `~/.openclaw/openclaw.json` (chmod 600), matching the pattern already used for the bot token. Both tokens are now env-var-free.
+- **Browser relay port 18792** — Default port, confirmed correct by checking OpenClaw source code. Extension connects via WebSocket to the gateway's relay server on this port.
+
+### Problems Solved
+
+1. **`MissingEnvVarError` for OPENCLAW_GATEWAY_TOKEN**
+   - Problem: Running `openclaw browser extension install` (or any openclaw CLI command) failed because `${OPENCLAW_GATEWAY_TOKEN}` wasn't set in the current shell
+   - Root cause: Env var defined in `~/.zshrc` but not loaded in the active terminal session (conda base environment)
+   - Temporary fix: `source ~/.zshrc` before running commands
+   - Permanent fix: Replaced `"${OPENCLAW_GATEWAY_TOKEN}"` with the literal token value in `~/.openclaw/openclaw.json` line 160
+   - Rationale: Same approach already used for bot token. Config file is chmod 600. Eliminates dependency on shell env entirely.
+
+2. **Browser relay auth on CDP endpoint**
+   - Observation: Direct `curl` to `http://127.0.0.1:18792/json/list` returned 401 Unauthorized (even with Bearer token)
+   - Reason: The relay uses WebSocket protocol (`ws://127.0.0.1:18792/extension`), not HTTP/CDP directly. The gateway mediates all communication.
+   - Solution: Used `openclaw agent` CLI to test through the gateway, which worked correctly.
+
+### Files Modified
+- `~/.openclaw/openclaw.json` — Changed `gateway.auth.token` from `${OPENCLAW_GATEWAY_TOKEN}` to literal token value
+- `~/.claude/projects/-Users-mark-PycharmProjects-openclaw/memory/MEMORY.md` — Updated gateway token pattern, added browser relay notes
+
+### Browser Relay Setup Complete
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Extension installed | Done | `~/.openclaw/browser/chrome-extension/` |
+| Loaded in Chrome | Done | Developer mode, unpacked extension |
+| Port configured | Done | 18792 (default) |
+| Badge showing ON | Done | Relay connected |
+| Agent can read tabs | Done | Tested via `openclaw agent` CLI — read relay config page |
+
+### Test Results
+- `openclaw browser status` shows: profile=chrome, enabled=true, running=true, cdpPort=18792
+- Agent successfully read the current Chrome tab (the relay options page) via `openclaw agent -m "..." --agent main --json`
+- Response included full page content extraction in 16.5 seconds
+
+### Cross-References
+- Browser extension source: `/Users/mark/PycharmProjects/openclaw/assets/chrome-extension/`
+- Installed extension: `~/.openclaw/browser/chrome-extension/`
+- Config file: `~/.openclaw/openclaw.json`
+- Extension docs: https://docs.openclaw.ai/tools/chrome-extension
+
+### Next Steps
+- [ ] Test Anthony via Telegram — verify he can use browser relay to read attached tabs
+- [ ] Phase 2: Test first research cycle — have Anthony write output to vault
+- [ ] Phase 2: Test OpenClaw URL summary writing to vault (via Telegram)
+- [ ] Phase 3: Test `7. Pending/` task handoff between systems
+- [ ] Add heartbeat tasks to HEARTBEAT.md
+- [ ] Explore Antfarm installation
+
+---
+
 ## Session: 2026-02-10 (9) - Anthony's Identity & Context Setup
 
 ### What We Did
