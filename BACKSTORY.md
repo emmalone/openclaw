@@ -4,6 +4,73 @@ Last Updated: 2026-02-09
 
 ---
 
+## Session: 2026-02-09 (7b) - Strategy & Shared Architecture
+
+### What We Did
+Developed a comprehensive strategy for integrating Claude Code (Max plan) with OpenClaw. Researched Claude Code's automation capabilities (daemon mode, Agent SDK, headless `-p` flag, Max plan TOS). Reviewed the full OpenClaw workspace and agent config. Wrote strategic guides for the combined system.
+
+### Key Decisions
+
+- **OpenClaw is the right tool for always-on task agents** — The alternatives (building from scratch, other frameworks like CrewAI/LangGraph) require months of work to replicate what OpenClaw provides out of the box
+- **Don't try to replace one system with the other** — Claude Code (free, best coding AI) and OpenClaw (always-on messaging, browser, proactive tasks) serve different purposes and complement each other
+- **Filesystem IS the shared memory** — No special integration needed. Both systems read/write `~/.openclaw/workspace/`. Task handoff via files in shared directories.
+- **Max plan cannot be routed through OpenClaw** — They are separate auth systems. OpenClaw always needs its own API key. Haiku at ~$8/month is the cost-effective choice.
+- **Antfarm is worth exploring** — Multi-agent workflow system built on OpenClaw, uses Ralph loop pattern, exactly what Mark wants for task-doing agents
+- **Keep Sonnet as primary for now** — Cost optimization (switching to Haiku) deferred to later
+
+### Research Findings: Claude Code Capabilities
+
+| Capability | Supported? | Notes |
+|---|---|---|
+| Always-on daemon mode | No | Requires TTY, session-based only |
+| Non-interactive scripting (`-p`) | Yes | Works, has large-input limitations |
+| Programmatic API/SDK | Yes | Python & TypeScript Agent SDKs |
+| Max plan automation | Conditional | Allowed but subject to fair-use/cooldowns |
+| Webhook/cron triggers | No (native) | Use external schedulers to invoke CC |
+
+### Workspace Review
+
+Reviewed all OpenClaw workspace files. Current state:
+- `AGENTS.md` — Well-developed (memory patterns, heartbeats, action words, group chat rules)
+- `SOUL.md` — Good + hardened with security rules
+- `Working-With-OpenClaw-Guide.md` — Comprehensive self-documentation by agent
+- `IDENTITY.md`, `USER.md`, `TOOLS.md` — Still unfilled templates
+- `HEARTBEAT.md` — Empty (no proactive tasks yet)
+- `memory/` — Only 2 session logs, needs more use
+- `references/antfarm-openclaw-agent-teams.md` — Key reference for multi-agent workflows
+
+### Files Created
+- `CLAUDE-CODE-OPENCLAW-STRATEGY.md` — Full strategic guide (cost analysis, architecture tiers, workflow patterns, when to use what)
+- `SHARED-ARCHITECTURE.md` — How to connect CC and OpenClaw (shared filesystem, task handoff patterns, resource map, next steps)
+- `~/.claude/projects/.../memory/MEMORY.md` — Claude Code auto-memory for this project
+
+### Task Handoff Patterns Defined
+
+1. **Telegram → OpenClaw → Claude Code**: Forward URL → agent saves summary → CC does heavy work
+2. **Claude Code → OpenClaw**: CC writes task file → tell agent via Telegram to execute it
+3. **Shared context via BACKSTORY.md**: Both systems reference the same project history
+4. **Heartbeat-driven background work**: OpenClaw checks things periodically, alerts via Telegram
+
+### Cross-References
+- Strategy guide: `/Users/mark/PycharmProjects/openclaw/CLAUDE-CODE-OPENCLAW-STRATEGY.md`
+- Architecture doc: `/Users/mark/PycharmProjects/openclaw/SHARED-ARCHITECTURE.md`
+- Antfarm reference: `~/.openclaw/workspace/references/antfarm-openclaw-agent-teams.md`
+- Antfarm repo: https://github.com/snarktank/antfarm
+- Ralph repo: https://github.com/snarktank/ralph
+- Claude Agent SDK: https://platform.claude.com/docs/en/agent-sdk/overview
+- Claude Code headless mode: `claude -p "prompt" --output-format json`
+
+### Next Steps
+- [ ] Fill in USER.md, TOOLS.md, IDENTITY.md in OpenClaw workspace
+- [ ] Add heartbeat tasks to HEARTBEAT.md
+- [ ] Explore Antfarm installation and test a workflow
+- [ ] Set up shared `tasks/` directory for CC ↔ OpenClaw handoff
+- [ ] Switch OpenClaw primary model to Haiku when ready to optimize costs
+- [ ] Test Claude Agent SDK for programmatic automation
+- [ ] Windows firewall rules for Ollama (security pending)
+
+---
+
 ## Session: 2026-02-09 (7) - Security Hardening & Brave Search Setup
 
 ### What We Did
