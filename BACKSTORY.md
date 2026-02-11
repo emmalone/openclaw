@@ -17,10 +17,11 @@ OpenClaw is Mark's personal AI gateway — always-on agent system with Telegram,
 - Skills allowlisted to 3: github, obsidian, summarize
 - Workspace files condensed (57% token reduction)
 - Obsidian vault integration live: `6. Agent Output/` staging, `7. Pending/` task handoff
+- Two-tier BACKSTORY system live: lean summary here, full log in vault
 
 ## Last Session (2026-02-11, #12)
-**What changed:** Redesigned BACKSTORY context system — split into lean summary (auto-loaded, ~700 tokens) and full session log in Obsidian vault (~0 tokens unless requested). 91% token reduction per session.
-**Unresolved:** Testing the new `/savenow` two-tier output
+**What changed:** Implemented two-tier BACKSTORY redesign. Migrated 11 sessions of history to Obsidian vault. Rewrote `/savenow` skill v2.0 with vault log + Anthony decision sync. 96% token reduction per session.
+**Unresolved:** Test `/savenow` in a project without existing BACKSTORY.md
 
 ## Active Threads
 - [ ] Test Anthony via Telegram with condensed workspace files
