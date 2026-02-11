@@ -1,6 +1,109 @@
 # OpenClaw Project Backstory
 
-Last Updated: 2026-02-10
+Last Updated: 2026-02-11
+
+---
+
+## Session: 2026-02-11 (11) - Token Optimization & Cost Reduction
+
+### What We Did
+Executed Anthony's first cross-system task handoff (task created by OpenClaw in `7. Pending/for-claude-code/`). Optimized all OpenClaw workspace files to reduce session-start token usage by 57%. Switched web search from Brave to Perplexity Pro for more token-efficient results. Disabled 10 unused skills to further reduce tool definition overhead.
+
+### Key Decisions
+
+- **Workspace files condensed aggressively** — Eliminated triple-duplication of Obsidian vault instructions (was in AGENTS.md twice + TOOLS.md), removed focus areas from MEMORY.md (already in USER.md), removed advisor table from MEMORY.md (already in IDENTITY.md).
+- **BOOTSTRAP.md deleted** — Its own instructions say "delete it after setup." Anthony was set up in session 9. Was wasting ~340 tokens per session.
+- **Perplexity Pro replaces Brave as primary search** — Perplexity returns pre-synthesized answers with citations. Brave returns raw results that Anthony has to process (consuming output tokens). Configured with `sonar-pro` model.
+- **Skills allowlisted to 3** — Only github, obsidian, summarize kept. 10 skills disabled (apple-notes, apple-reminders, bluebubbles, clawhub, coding-agent, nano-pdf, openai-whisper, skill-creator, video-frames, weather). Saves ~1,500-2,000 tokens of tool definitions per API call.
+- **Reference docs moved to vault** — `6-AI-Agents-Company-Build-Guide.md` (6,648 words) and `Working-With-OpenClaw-Guide.md` (2,050 words) moved to `/Users/mark/LIfeOS/6. Agent Output/reference/openclaw/`. Not auto-loaded but cluttered workspace.
+- **Task README fixed** — Anthony's task handoff README incorrectly referenced Windsurf/Cursor IDEs. Corrected to Claude Code CLI in Ghostty.
+- **Used correct config keys** — Task suggested `tools.browser.defaults.snapshot.compact` and `sessions.compaction.targetTokens` which don't exist. Found actual keys via source code: `browser.snapshotDefaults.mode: "efficient"` and `agents.defaults.compaction.*`.
+
+### Token Savings Summary
+
+| Change | Savings |
+|--------|---------|
+| Workspace files (4,414 → 1,910 words) | ~3,400 tokens |
+| 10 skills disabled | ~1,500-2,000 tokens |
+| Browser snapshots → efficient mode | Variable (per use) |
+| Brave → Perplexity search | Variable (per search) |
+| **Estimated first-message reduction** | **~5,000-5,400 tokens** |
+
+### Files Modified
+
+**Workspace files condensed:**
+- `~/.openclaw/workspace/MEMORY.md` — 841 → 380 words (55% reduction)
+- `~/.openclaw/workspace/AGENTS.md` — 1,880 → 496 words (74% reduction)
+- `~/.openclaw/workspace/IDENTITY.md` — 311 → 161 words (48% reduction)
+- `~/.openclaw/workspace/USER.md` — 444 → 253 words (43% reduction)
+- `~/.openclaw/workspace/TOOLS.md` — 565 → 218 words (61% reduction)
+
+**Config (`~/.openclaw/openclaw.json`):**
+- Added `browser.snapshotDefaults.mode: "efficient"`
+- Added `agents.defaults.compaction.reserveTokensFloor: 20000`
+- Added `agents.defaults.compaction.maxHistoryShare: 0.6`
+- Added `tools.web.search.provider: "perplexity"` with API key and `sonar-pro` model
+- Added `skills.allowBundled: ["github", "obsidian", "summarize"]`
+
+**Files moved:**
+- `~/.openclaw/workspace/6-AI-Agents-Company-Build-Guide.md` → `/Users/mark/LIfeOS/6. Agent Output/reference/openclaw/`
+- `~/.openclaw/workspace/Working-With-OpenClaw-Guide.md` → `/Users/mark/LIfeOS/6. Agent Output/reference/openclaw/`
+
+**Files deleted:**
+- `~/.openclaw/workspace/BOOTSTRAP.md` (setup complete, per its own instructions)
+
+**Files created:**
+- `~/.claude/secrets.local.md` — Perplexity API key stored (chmod 600, gitignored)
+
+**Task handoff files:**
+- `/Users/mark/LIfeOS/7. Pending/for-claude-code/README.md` — Fixed Windsurf references
+- `/Users/mark/LIfeOS/7. Pending/for-claude-code/2026-02-11-optimize-openclaw-context.md` → moved to `completed/`
+
+### Problems Solved
+
+1. **Rate limit exceeded (30K tokens/minute)**
+   - Problem: Anthony's Telegram sessions hit Anthropic rate limit due to ~80K cached tokens
+   - Root cause: Bloated workspace files (~5,900 tokens), verbose search results (Brave), 13 loaded skills, uncompacted browser snapshots
+   - Solution: Multi-pronged — condensed workspace (57%), switched to Perplexity (pre-summarized), disabled 10 skills, added compaction settings, enabled efficient browser snapshots
+
+2. **Task handoff README referenced wrong tools**
+   - Problem: Anthony wrote instructions assuming Mark uses Windsurf/Cursor IDE
+   - Solution: Corrected to Claude Code CLI in Ghostty terminal
+
+3. **Task suggested invalid config keys**
+   - Problem: `tools.browser.defaults.snapshot.compact` and `sessions.compaction.targetTokens` don't exist in OpenClaw schema
+   - Solution: Searched source code, found correct keys: `browser.snapshotDefaults.mode` and `agents.defaults.compaction.*`
+
+### First Cross-System Task Handoff
+
+This session validated the `7. Pending/` task handoff workflow:
+1. Anthony (OpenClaw) identified a problem (rate limiting)
+2. Anthony created a task file in `7. Pending/for-claude-code/`
+3. Mark notified Claude Code to check the folder
+4. Claude Code read, validated, corrected, and executed the task
+5. Task moved to `completed/` folder
+
+The workflow works. Anthony's task was mostly good but had wrong config keys and wrong IDE references — Claude Code caught and fixed both.
+
+### Cross-References
+- Completed task: `/Users/mark/LIfeOS/7. Pending/completed/2026-02-11-optimize-openclaw-context.md`
+- Reference docs moved to: `/Users/mark/LIfeOS/6. Agent Output/reference/openclaw/`
+- Perplexity API key: `~/.claude/secrets.local.md`
+- OpenClaw config: `~/.openclaw/openclaw.json`
+- Browser snapshot config source: `/Users/mark/PycharmProjects/openclaw/src/config/types.browser.ts`
+- Compaction config source: `/Users/mark/PycharmProjects/openclaw/src/config/types.agent-defaults.ts`
+- Skills config source: `/Users/mark/PycharmProjects/openclaw/src/agents/skills/config.ts`
+- Web search source: `/Users/mark/PycharmProjects/openclaw/src/agents/tools/web-search.ts`
+
+### Next Steps
+- [ ] Test Anthony via Telegram — verify condensed files load correctly
+- [ ] Test Perplexity search via Telegram — ask Anthony to search for something
+- [ ] Re-enable skills as needed (add to `allowBundled` array)
+- [ ] Phase 2: Test research cycle — have Anthony write output to vault
+- [ ] Phase 3: Test `7. Pending/` task handoff from Claude Code → OpenClaw
+- [ ] Add heartbeat tasks to HEARTBEAT.md
+- [ ] Explore Antfarm installation
+- [ ] Consider switching primary model to Haiku for cost optimization
 
 ---
 
@@ -57,7 +160,7 @@ Installed the OpenClaw browser relay Chrome extension and fixed the recurring `M
 - [ ] Test Anthony via Telegram — verify he can use browser relay to read attached tabs
 - [ ] Phase 2: Test first research cycle — have Anthony write output to vault
 - [ ] Phase 2: Test OpenClaw URL summary writing to vault (via Telegram)
-- [ ] Phase 3: Test `7. Pending/` task handoff between systems
+- [x] Phase 3: Test `7. Pending/` task handoff between systems — Done in session 11 (Anthony created task, Claude Code executed it)
 - [ ] Add heartbeat tasks to HEARTBEAT.md
 - [ ] Explore Antfarm installation
 
