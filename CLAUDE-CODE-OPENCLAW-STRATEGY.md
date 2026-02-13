@@ -8,11 +8,11 @@
 
 ## The Core Tension
 
-| Resource | Strength | Limitation |
-|----------|----------|------------|
-| **Claude Code (Max plan)** | Unlimited inference, best coding AI, full system access | Session-based, requires TTY, no daemon mode, no messaging channels |
-| **OpenClaw** | Always-on daemon, Telegram/multi-channel, browser CDP, skills | Every interaction requires LLM inference (API key = money) |
-| **Ollama** | Free local inference, no API costs | Too weak for OpenClaw's complex tool architecture (tested, documented) |
+| Resource                   | Strength                                                      | Limitation                                                             |
+| -------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Claude Code (Max plan)** | Unlimited inference, best coding AI, full system access       | Session-based, requires TTY, no daemon mode, no messaging channels     |
+| **OpenClaw**               | Always-on daemon, Telegram/multi-channel, browser CDP, skills | Every interaction requires LLM inference (API key = money)             |
+| **Ollama**                 | Free local inference, no API costs                            | Too weak for OpenClaw's complex tool architecture (tested, documented) |
 
 **The honest truth:** There is no way to route OpenClaw's inference through your Max plan. The Max plan covers Claude Code CLI and claude.ai web only. OpenClaw requires its own API key for every LLM call. These are fundamentally separate auth systems.
 
@@ -37,28 +37,28 @@ Even a simple "what time is it?" costs ~15K tokens of input (system prompt + too
 
 ### Features You Cannot Replicate with Claude Code Alone
 
-| Feature | OpenClaw | Claude Code | Gap |
-|---------|----------|-------------|-----|
-| **Always-on messaging** | Telegram, WhatsApp, Signal, Discord, Slack | None — session-based | Large |
-| **Browser control (CDP)** | Managed Chrome, screenshot, navigate, interact | None | Large |
-| **Voice wake/talk** | ElevenLabs integration, wake word | None | Large |
-| **Multi-agent routing** | Multiple isolated agents per channel | Single session | Medium |
-| **Session persistence** | Survives restarts, compaction, memory | Lost on exit (BACKSTORY.md workaround) | Medium |
-| **Mobile companion apps** | iOS/Android nodes | SSH terminal apps | Small |
-| **Canvas/A2UI** | Visual workspace for dashboards | Text output only | Medium |
-| **Skills platform** | Installable skills, skill marketplace | Custom slash commands | Small |
+| Feature                   | OpenClaw                                       | Claude Code                            | Gap    |
+| ------------------------- | ---------------------------------------------- | -------------------------------------- | ------ |
+| **Always-on messaging**   | Telegram, WhatsApp, Signal, Discord, Slack     | None — session-based                   | Large  |
+| **Browser control (CDP)** | Managed Chrome, screenshot, navigate, interact | None                                   | Large  |
+| **Voice wake/talk**       | ElevenLabs integration, wake word              | None                                   | Large  |
+| **Multi-agent routing**   | Multiple isolated agents per channel           | Single session                         | Medium |
+| **Session persistence**   | Survives restarts, compaction, memory          | Lost on exit (BACKSTORY.md workaround) | Medium |
+| **Mobile companion apps** | iOS/Android nodes                              | SSH terminal apps                      | Small  |
+| **Canvas/A2UI**           | Visual workspace for dashboards                | Text output only                       | Medium |
+| **Skills platform**       | Installable skills, skill marketplace          | Custom slash commands                  | Small  |
 
 ### Features Claude Code Already Does Better
 
-| Feature | Claude Code | OpenClaw |
-|---------|-------------|----------|
-| **Coding** | Best-in-class, full codebase understanding | Basic (designed for assistant tasks) |
-| **File operations** | Glob, Grep, Read, Edit, Write — optimized tools | exec-based file ops |
-| **Git operations** | Native integration, PR creation, code review | Via exec tool |
-| **System automation** | Direct bash, comprehensive tool access | Via exec (with approval) |
-| **Cost** | $0 on Max plan | Per-token API costs |
-| **Context window** | Automatic compaction, huge context | Limited by model/cost |
-| **Plan mode** | Built-in architectural planning | Not available |
+| Feature               | Claude Code                                     | OpenClaw                             |
+| --------------------- | ----------------------------------------------- | ------------------------------------ |
+| **Coding**            | Best-in-class, full codebase understanding      | Basic (designed for assistant tasks) |
+| **File operations**   | Glob, Grep, Read, Edit, Write — optimized tools | exec-based file ops                  |
+| **Git operations**    | Native integration, PR creation, code review    | Via exec tool                        |
+| **System automation** | Direct bash, comprehensive tool access          | Via exec (with approval)             |
+| **Cost**              | $0 on Max plan                                  | Per-token API costs                  |
+| **Context window**    | Automatic compaction, huge context              | Limited by model/cost                |
+| **Plan mode**         | Built-in architectural planning                 | Not available                        |
 
 ---
 
@@ -73,6 +73,7 @@ iPhone/iPad/Laptop → SSH → Mac Mini → Claude Code
 ```
 
 **Use for:**
+
 - All coding and development
 - File system operations
 - Git workflows
@@ -84,6 +85,7 @@ iPhone/iPad/Laptop → SSH → Mac Mini → Claude Code
 **Cost:** $0 (Max plan)
 
 **Setup:**
+
 ```bash
 # From anywhere
 ssh mark@your-tailscale-ip
@@ -96,6 +98,7 @@ claude
 **Use OpenClaw for what Claude Code can't do:** real-time messaging, browser control, and quick mobile interactions.
 
 **Use for:**
+
 - Quick questions from Telegram when you can't SSH
 - "Read this URL and summarize it" (browser + LLM)
 - Forwarding tweets/articles for later review
@@ -113,6 +116,7 @@ claude
 That's roughly **the cost of a coffee per month** for always-on Telegram access.
 
 **Current config change to make Haiku primary for OpenClaw:**
+
 ```json
 {
   "agents": {
@@ -141,6 +145,7 @@ ollama run qwen2.5-coder:14b "write a python script that..."
 **Why not through OpenClaw:** Documented in sessions 4-5 — local models can't handle OpenClaw's complex system prompt and tool architecture. They either output `NO_REPLY` or raw JSON tool calls.
 
 **Use for:**
+
 - Quick throwaway questions that don't need tool access
 - Code snippets and explanations
 - Offline work when you have no internet
@@ -152,6 +157,7 @@ ollama run qwen2.5-coder:14b "write a python script that..."
 ### What You Could Build Yourself
 
 **Simple Telegram relay bot (no LLM needed):**
+
 ```python
 # Concept: Telegram bot that queues messages for Claude Code
 # Bot receives message → writes to ~/queue/inbox/
@@ -160,11 +166,13 @@ ollama run qwen2.5-coder:14b "write a python script that..."
 ```
 
 This would give you:
+
 - Telegram messaging (free, no API key)
 - Claude Code does the thinking (Max plan)
 - File-based message queue
 
 **Limitations:**
+
 - Not real-time (needs active Claude Code session to process)
 - No browser control
 - No streaming responses
@@ -185,12 +193,12 @@ This would give you:
 
 ### The Honest Assessment
 
-| Approach | Effort | Capability | Cost |
-|----------|--------|------------|------|
-| **OpenClaw + Haiku** | Already set up | Full messaging + browser + tools | ~$8/month |
-| **Custom Telegram relay + Claude Code** | 2-4 days to build | Messaging only, not real-time | $0 |
-| **Custom full replacement** | Weeks/months | Could match OpenClaw eventually | $0 inference, huge time cost |
-| **Claude Code only (SSH)** | Zero | No messaging, no always-on | $0 |
+| Approach                                | Effort            | Capability                       | Cost                         |
+| --------------------------------------- | ----------------- | -------------------------------- | ---------------------------- |
+| **OpenClaw + Haiku**                    | Already set up    | Full messaging + browser + tools | ~$8/month                    |
+| **Custom Telegram relay + Claude Code** | 2-4 days to build | Messaging only, not real-time    | $0                           |
+| **Custom full replacement**             | Weeks/months      | Could match OpenClaw eventually  | $0 inference, huge time cost |
+| **Claude Code only (SSH)**              | Zero              | No messaging, no always-on       | $0                           |
 
 **Recommendation:** Use OpenClaw with Haiku for the ~$8/month it costs. The engineering time to replicate even half of what OpenClaw provides would cost far more in your time than years of Haiku API costs.
 
@@ -210,6 +218,7 @@ openclaw config set agents.defaults.model.fallbacks '["anthropic/claude-sonnet-4
 ### 2. Use /model Command for Escalation
 
 When a task needs more capability, escalate manually in Telegram:
+
 ```
 /model sonnet    # For moderate complexity
 /model opus      # For complex reasoning (use sparingly)
@@ -219,6 +228,7 @@ When a task needs more capability, escalate manually in Telegram:
 ### 3. Reduce System Prompt Size
 
 The default system prompt is ~4K tokens sent with every request. Consider trimming:
+
 - `~/.openclaw/workspace/AGENTS.md` — keep only essential instructions
 - `~/.openclaw/workspace/SOUL.md` — keep concise
 - Remove unused bootstrap files if not needed
@@ -230,6 +240,7 @@ Each `/new` command resets context, reducing input tokens on subsequent messages
 ### 5. Offload Heavy Work to Claude Code
 
 When a Telegram conversation reveals complex work:
+
 1. Ask OpenClaw to write a task file: "Write a description of this task to ~/tasks/current.md"
 2. SSH into your Mac Mini
 3. Open Claude Code, read the task file, execute with full power
@@ -269,23 +280,24 @@ Always running (background):
 
 ### When to Use What
 
-| Scenario | Tool | Why |
-|----------|------|-----|
-| Writing code | Claude Code (SSH) | Best coding AI, free on Max plan |
-| Quick question from phone | OpenClaw (Telegram/Haiku) | Mobile, real-time, cheap |
-| "Read this URL" | OpenClaw (browser + Haiku) | Has browser CDP, can fetch pages |
-| Complex architecture | Claude Code (SSH) | Plan mode, full context, free |
-| "Remind me about X" | OpenClaw (Telegram/Haiku) | Always-on, session memory |
-| Git operations | Claude Code (SSH) | Native integration, free |
-| Forward a tweet | OpenClaw (browser + Haiku/Sonnet) | Browser logged into X, can read tweets |
-| System administration | Claude Code (SSH) | Full system access, free |
-| Quick code question (offline) | Ollama (direct CLI) | Free, local, no internet needed |
+| Scenario                      | Tool                              | Why                                    |
+| ----------------------------- | --------------------------------- | -------------------------------------- |
+| Writing code                  | Claude Code (SSH)                 | Best coding AI, free on Max plan       |
+| Quick question from phone     | OpenClaw (Telegram/Haiku)         | Mobile, real-time, cheap               |
+| "Read this URL"               | OpenClaw (browser + Haiku)        | Has browser CDP, can fetch pages       |
+| Complex architecture          | Claude Code (SSH)                 | Plan mode, full context, free          |
+| "Remind me about X"           | OpenClaw (Telegram/Haiku)         | Always-on, session memory              |
+| Git operations                | Claude Code (SSH)                 | Native integration, free               |
+| Forward a tweet               | OpenClaw (browser + Haiku/Sonnet) | Browser logged into X, can read tweets |
+| System administration         | Claude Code (SSH)                 | Full system access, free               |
+| Quick code question (offline) | Ollama (direct CLI)               | Free, local, no internet needed        |
 
 ---
 
 ## Implementation Checklist
 
 ### Already Done
+
 - [x] Claude Code working via SSH (Max plan)
 - [x] OpenClaw gateway running (LaunchAgent)
 - [x] Telegram bot configured and working
@@ -295,11 +307,13 @@ Always running (background):
 - [x] Browser control working (CDP, logged into X)
 
 ### To Do Now
+
 - [ ] Switch OpenClaw primary model to Haiku (cheapest)
 - [ ] Trim workspace bootstrap files for smaller system prompt
 - [ ] Test Haiku handles your typical Telegram interactions adequately
 
 ### To Do Later
+
 - [ ] Set up Anthropic usage monitoring/alerts
 - [ ] Consider custom Telegram relay bot if you want $0 messaging (with delayed responses)
 - [ ] Explore Claude Agent SDK for programmatic automation
@@ -310,13 +324,13 @@ Always running (background):
 
 ## Cost Comparison Summary
 
-| Setup | Monthly Cost | Capabilities |
-|-------|-------------|--------------|
-| Claude Code only (SSH) | $0 (Max plan) | Everything except messaging/always-on |
-| + OpenClaw with Haiku | ~$8-15/month | + Telegram, browser, always-on |
-| + OpenClaw with Sonnet | ~$50-100/month | + Better reasoning for complex tasks |
-| + OpenClaw with Opus | ~$200-500/month | Full capability (unnecessary for most tasks) |
-| Custom relay bot | $0 | Telegram with delays, no browser, fragile |
+| Setup                  | Monthly Cost    | Capabilities                                 |
+| ---------------------- | --------------- | -------------------------------------------- |
+| Claude Code only (SSH) | $0 (Max plan)   | Everything except messaging/always-on        |
+| + OpenClaw with Haiku  | ~$8-15/month    | + Telegram, browser, always-on               |
+| + OpenClaw with Sonnet | ~$50-100/month  | + Better reasoning for complex tasks         |
+| + OpenClaw with Opus   | ~$200-500/month | Full capability (unnecessary for most tasks) |
+| Custom relay bot       | $0              | Telegram with delays, no browser, fragile    |
 
 **The sweet spot:** Claude Code (SSH) for heavy work + OpenClaw (Haiku) for messaging = ~$8/month total beyond your Max plan.
 

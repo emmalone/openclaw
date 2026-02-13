@@ -7,17 +7,17 @@
 
 ## Current State of Mark's OpenClaw Workspace
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `AGENTS.md` | Well-developed | Memory patterns, heartbeat system, group chat rules, action words |
-| `SOUL.md` | Good + hardened | Personality, boundaries, security rules (added 2026-02-09) |
-| `Working-With-OpenClaw-Guide.md` | Comprehensive | Agent self-documentation of capabilities and patterns |
-| `IDENTITY.md` | Unfilled template | Agent hasn't personalized yet |
-| `USER.md` | Unfilled template | No user profile populated |
-| `TOOLS.md` | Template only | No environment-specific notes yet |
-| `HEARTBEAT.md` | Empty | No proactive tasks configured |
-| `memory/` | 2 session logs | Sparse — needs more use to build up |
-| `references/` | 1 file (Antfarm) | Tweet summary of multi-agent workflows |
+| File                             | Status            | Purpose                                                           |
+| -------------------------------- | ----------------- | ----------------------------------------------------------------- |
+| `AGENTS.md`                      | Well-developed    | Memory patterns, heartbeat system, group chat rules, action words |
+| `SOUL.md`                        | Good + hardened   | Personality, boundaries, security rules (added 2026-02-09)        |
+| `Working-With-OpenClaw-Guide.md` | Comprehensive     | Agent self-documentation of capabilities and patterns             |
+| `IDENTITY.md`                    | Unfilled template | Agent hasn't personalized yet                                     |
+| `USER.md`                        | Unfilled template | No user profile populated                                         |
+| `TOOLS.md`                       | Template only     | No environment-specific notes yet                                 |
+| `HEARTBEAT.md`                   | Empty             | No proactive tasks configured                                     |
+| `memory/`                        | 2 session logs    | Sparse — needs more use to build up                               |
+| `references/`                    | 1 file (Antfarm)  | Tweet summary of multi-agent workflows                            |
 
 **Location:** `~/.openclaw/workspace/`
 
@@ -29,18 +29,18 @@
 
 OpenClaw provides the **infrastructure layer** that Claude Code lacks:
 
-| Capability | OpenClaw | Claude Code | Building It Yourself |
-|------------|----------|-------------|---------------------|
-| Always-on daemon | Built-in (LaunchAgent) | Not possible | Weeks of work |
-| Telegram messaging | Built-in, polling mode | Not possible | Days (basic bot) |
-| Browser CDP control | Managed Chrome on port 18800 | Not possible | Significant effort |
-| Heartbeat/proactive checks | Built-in (HEARTBEAT.md) | Not possible | Custom cron scripts |
-| Cron scheduled tasks | Built-in | Not possible | Basic (just cron) |
-| Sub-agents | Built-in (background sessions) | Not possible | Complex |
-| Session persistence | Compaction + session logs | Lost on exit | Custom persistence layer |
-| Multi-channel | Telegram, WhatsApp, Discord, etc. | Terminal only | Months per channel |
-| Skills platform | Installable skills marketplace | Slash commands only | Custom plugin system |
-| Web search | Brave API integration | Built-in (different) | API integration |
+| Capability                 | OpenClaw                          | Claude Code          | Building It Yourself     |
+| -------------------------- | --------------------------------- | -------------------- | ------------------------ |
+| Always-on daemon           | Built-in (LaunchAgent)            | Not possible         | Weeks of work            |
+| Telegram messaging         | Built-in, polling mode            | Not possible         | Days (basic bot)         |
+| Browser CDP control        | Managed Chrome on port 18800      | Not possible         | Significant effort       |
+| Heartbeat/proactive checks | Built-in (HEARTBEAT.md)           | Not possible         | Custom cron scripts      |
+| Cron scheduled tasks       | Built-in                          | Not possible         | Basic (just cron)        |
+| Sub-agents                 | Built-in (background sessions)    | Not possible         | Complex                  |
+| Session persistence        | Compaction + session logs         | Lost on exit         | Custom persistence layer |
+| Multi-channel              | Telegram, WhatsApp, Discord, etc. | Terminal only        | Months per channel       |
+| Skills platform            | Installable skills marketplace    | Slash commands only  | Custom plugin system     |
+| Web search                 | Brave API integration             | Built-in (different) | API integration          |
 
 ### The alternatives and why they're worse:
 
@@ -59,12 +59,14 @@ OpenClaw provides the **infrastructure layer** that Claude Code lacks:
 Both Claude Code and OpenClaw can read and write to the same Mac filesystem. No special integration needed — just shared conventions about where things live.
 
 **Claude Code can access:**
+
 - `~/.openclaw/workspace/` — all agent files, memory, references
 - `~/.openclaw/openclaw.json` — config
 - `~/.openclaw/agents/main/sessions/*.jsonl` — full conversation history
 - Everything else on the Mac
 
 **OpenClaw can access:**
+
 - Its workspace (`~/.openclaw/workspace/`)
 - Browser (CDP on port 18800)
 - Web search (Brave API)
@@ -196,6 +198,7 @@ The Antfarm reference your agent saved (`references/antfarm-openclaw-agent-teams
 - **Built for OpenClaw** — One-command install
 
 **Bundled workflows:**
+
 - `feature-dev` (7 agents) — Feature request → tested PR
 - `security-audit` (7 agents) — Repo → security fix PR
 - `bug-fix` (6 agents) — Bug report → fix with regression test
@@ -209,18 +212,21 @@ This could be the bridge between "I want agents that DO things" and "I don't wan
 ## Immediate Next Steps
 
 ### Quick Wins (Do Now)
+
 - [ ] Fill in `USER.md` with Mark's profile (timezone, preferences, context)
 - [ ] Fill in `TOOLS.md` with environment specifics (SSH hosts, Tailscale IPs, device names)
 - [ ] Add basic heartbeat tasks to `HEARTBEAT.md`
 - [ ] Test the task handoff pattern (write a file in CC, have OpenClaw read it)
 
 ### Medium Term
+
 - [ ] Explore Antfarm installation and test a workflow
 - [ ] Set up a shared `tasks/` directory convention
 - [ ] Configure OpenClaw memory maintenance (MEMORY.md curation during heartbeats)
 - [ ] Switch OpenClaw primary model to Haiku for cost optimization
 
 ### Longer Term
+
 - [ ] Build custom OpenClaw skills for Mark's specific workflows
 - [ ] Explore Claude Agent SDK for programmatic automation
 - [ ] Set up Windows PC Ollama firewall rules
